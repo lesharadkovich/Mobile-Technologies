@@ -1,11 +1,9 @@
 import React, { Component } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Image, ScrollView, PermissionsAndroid } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { FormLabel, FormInput, FormValidationMessage } from 'react-native-elements'
 import {bold, button, buttonText, text} from "../assets/styles/global";
-import ImagePicker from 'react-native-image-picker';
-import {moviesService} from "../services/movies.service";
 
-export default class MovieCreationPage extends Component {
+export default class FormItemPage extends Component {
     static navigationOptions = ({ navigation }) => ({
         title: navigation.getParam('title'),
     });
@@ -13,8 +11,10 @@ export default class MovieCreationPage extends Component {
     constructor(props) {
         super(props);
 
+        this.name = '';
         this.state = {
-            imageSource: { uri: 'https://timedotcom.files.wordpress.com/2017/05/star-wars_1024.jpg' }
+            imageSource: { uri: 'https://timedotcom.files.wordpress.com/2017/05/star-wars_1024.jpg' },
+            error: false
         }
     }
 
@@ -31,9 +31,17 @@ export default class MovieCreationPage extends Component {
         // this.setState({ movies });
     }
 
-    // onInputChange(a) {
-    //     if ()
-    // }
+    get value() {
+        return this.name;
+    }
+
+    onInputChange(event) {
+        if (!event) {
+            this.setState({ error: true });
+        }
+
+        this.name = event;
+    }
 
     render() {
         const {label, placeholder} = this.props;
@@ -46,7 +54,9 @@ export default class MovieCreationPage extends Component {
                     placeholder={placeholder}
                     inputStyle={styles.input}
                 />
-                <FormValidationMessage>This field is required</FormValidationMessage>
+                {
+                    this.state.error && <FormValidationMessage>This field is required</FormValidationMessage>
+                }
             </View>
         );
     }

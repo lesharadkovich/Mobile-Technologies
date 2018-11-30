@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Image, ScrollView, PermissionsAndroid } from 'react-native';
-import { FormLabel, FormInput, FormValidationMessage } from 'react-native-elements'
-import {bold, button, buttonText, text} from "../assets/styles/global";
 import ImagePicker from 'react-native-image-picker';
+
+import FormItem from "./FormItem";
+import {bold, button, buttonText, text} from "../assets/styles/global";
 import {moviesService} from "../services/movies.service";
 
 export default class MovieCreationPage extends Component {
@@ -13,6 +14,8 @@ export default class MovieCreationPage extends Component {
     constructor(props) {
         super(props);
 
+        this.imagePickerLastResponse = null;
+        this.inputRefs = {};
         this.state = {
             imageSource: { uri: 'https://timedotcom.files.wordpress.com/2017/05/star-wars_1024.jpg' }
         }
@@ -31,10 +34,6 @@ export default class MovieCreationPage extends Component {
         // this.setState({ movies });
     }
 
-    someFunction(a) {
-        console.log(a);
-    }
-
     selectImage = () => {
         ImagePicker.showImagePicker(async (response) => {
             console.log('Response = ', response);
@@ -46,6 +45,8 @@ export default class MovieCreationPage extends Component {
             } else if (response.customButton) {
                 console.log('User tapped custom button: ', response.customButton);
             } else {
+                this.imagePickerLastResponse = response;
+
                 const source = { uri: response.uri };
 
                 // You can also display the image using data:
@@ -58,38 +59,38 @@ export default class MovieCreationPage extends Component {
         });
     };
 
+    save = () => {
+        const name = this.inputRefs.name.value;
+        const director = this.inputRefs.director.value;
+        const description = this.inputRefs.description.value;
+
+        if (!name || !director || !description) {
+            return;
+        }
+
+        moviesService.createNewMovie(name, director, description, this.imagePickerLastResponse);
+    };
+
     render() {
         return (
             <ScrollView style={ styles.container }>
-                <View>
-                    <FormLabel>Name</FormLabel>
-                    <FormInput
-                        onChangeText={this.someFunction}
-                        placeholder={'Enter movie name'}
-                        inputStyle={styles.input}
-                    />
-                    <FormValidationMessage>Error message</FormValidationMessage>
-                </View>
+                <FormItem
+                    ref={(item) => this.inputRefs.name = item}
+                    label={'Name'}
+                    placeholder={'Enter movie name'}
+                />
 
-                <View>
-                    <FormLabel>Director</FormLabel>
-                    <FormInput
-                        onChangeText={this.someFunction}
-                        placeholder={'Enter name of movie director'}
-                        inputStyle={styles.input}
-                    />
-                    <FormValidationMessage>Error message</FormValidationMessage>
-                </View>
+                <FormItem
+                    ref={(item) => this.inputRefs.director = item}
+                    label={'Director'}
+                    placeholder={'Enter name of movie director'}
+                />
 
-                <View>
-                    <FormLabel>Description</FormLabel>
-                    <FormInput
-                        onChangeText={this.someFunction}
-                        placeholder={'Enter movie description'}
-                        inputStyle={styles.input}
-                    />
-                    <FormValidationMessage>Error message</FormValidationMessage>
-                </View>
+                <FormItem
+                    ref={(item) => this.inputRefs.description = item}
+                    label={'Description'}
+                    placeholder={'Enter movie description'}
+                />
 
 
                 <View style={{marginTop: 20}}>
@@ -100,11 +101,19 @@ export default class MovieCreationPage extends Component {
                     <TouchableOpacity onPress={this.selectImage}>
                         <View style={[styles.button, styles.logInButton]}>
                             <Text style={[styles.buttonText, styles.logInButtonText]}>
-                                SelectImage
+                                Select Image
                             </Text>
                         </View>
                     </TouchableOpacity>
                 </View>
+
+                <TouchableOpacity onPress={this.save}>
+                    <View style={[styles.button, styles.logInButton]}>
+                        <Text style={[styles.buttonText, styles.logInButtonText]}>
+                            Save
+                        </Text>
+                    </View>
+                </TouchableOpacity>
 
             </ScrollView>
         );

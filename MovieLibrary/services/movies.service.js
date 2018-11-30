@@ -19,11 +19,14 @@ class Http {
             .catch(Http.handleError)
     }
 
-    static post(url, body) {
+    static post(url, body, contentType = 'application/json') {
         return fetch(url, {
             method: 'POST',
             body,
-            headers: new Headers({ Accept: 'application/json' }),
+            headers: new Headers({
+                Accept: 'application/json',
+                'Content-Type': contentType
+            }),
         })
             .then(res => res.json())
             .then(Http.checkError)
@@ -32,7 +35,7 @@ class Http {
 }
 
 class MoviesService {
-    baseUrl: string;
+    baseUrl;
 
     constructor() {
         this.baseUrl = 'https://movielibraryapi-bstu-mt.herokuapp.com';
@@ -43,6 +46,25 @@ class MoviesService {
         const result = await Http.get(url);
 
         return result || [];
+    }
+
+    async createNewMovie(name, director, description, image) {
+        const data = new FormData();
+
+        data.append('name', name);
+        data.append('director', director);
+        data.append('description', description);
+        if (image) {
+            data.append('photo', {
+                uri: image.uri,
+                type: image.type,
+                name: image.fileName,
+                data: image.data
+            });
+        }
+
+
+        return Http.post(`${this.baseUrl}/library`, data, 'multipart/form-data')
     }
 }
 
