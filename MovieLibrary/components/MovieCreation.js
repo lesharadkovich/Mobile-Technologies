@@ -1,15 +1,16 @@
 import React, { Component } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Image, ScrollView, PermissionsAndroid } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
 import ImagePicker from 'react-native-image-picker';
+import Spinner from 'react-native-loading-spinner-overlay';
 
 import FormItem from "./FormItem";
 import {bold, button, buttonText, text} from "../assets/styles/global";
 import {moviesService} from "../services/movies.service";
 
 export default class MovieCreationPage extends Component {
-    static navigationOptions = ({ navigation }) => ({
-        title: navigation.getParam('title'),
-    });
+    static navigationOptions = {
+        title: 'New movie',
+    };
 
     constructor(props) {
         super(props);
@@ -17,21 +18,9 @@ export default class MovieCreationPage extends Component {
         this.imagePickerLastResponse = null;
         this.inputRefs = {};
         this.state = {
-            imageSource: { uri: 'https://timedotcom.files.wordpress.com/2017/05/star-wars_1024.jpg' }
+            imageSource: { uri: 'https://timedotcom.files.wordpress.com/2017/05/star-wars_1024.jpg' },
+            spinner: false
         }
-    }
-
-    async componentDidMount() {
-        const movie = this.props.navigation.getParam('movie');
-        const title = movie
-            ? `Edit movie ${movie.name}`
-            : 'New movie';
-        this.props.navigation.setParams({ title });
-
-        // const granted = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE);
-        // console.log(granted);
-        // const movies = await moviesService.getAllMovies();
-        // this.setState({ movies });
     }
 
     selectImage = () => {
@@ -47,33 +36,51 @@ export default class MovieCreationPage extends Component {
             } else {
                 this.imagePickerLastResponse = response;
 
-                const source = { uri: response.uri };
+                const source = { uri: 'data:image/jpeg;base64,' + response.data };
 
                 // You can also display the image using data:
                 // const source = { uri: 'data:image/jpeg;base64,' + response.data };
 
                 this.setState({
-                    avatarSource: source,
+                    imageSource: source,
                 });
             }
         });
     };
 
-    save = () => {
+    save = async () => {
+        this.setState({ spinner: true });
+
         const name = this.inputRefs.name.value;
         const director = this.inputRefs.director.value;
         const description = this.inputRefs.description.value;
+        const imageurl = this.imagePickerLastResponse;
 
         if (!name || !director || !description) {
             return;
         }
 
-        moviesService.createNewMovie(name, director, description, this.imagePickerLastResponse);
+        let result = '';
+        try {
+            await moviesService.createNewMovie(name, director, description, imageurl);
+            result = 'Movie successfully created!';
+        } catch (err) {
+            result = err;
+        } finally {
+            this.setState({ spinner: false });
+            alert(result);
+        }
     };
 
     render() {
         return (
             <ScrollView style={ styles.container }>
+                <Spinner
+                    visible={this.state.spinner}
+                    textContent={'Loading...'}
+                    textStyle={styles.spinnerTextStyle}
+                />
+
                 <FormItem
                     ref={(item) => this.inputRefs.name = item}
                     label={'Name'}
@@ -95,7 +102,7 @@ export default class MovieCreationPage extends Component {
 
                 <View style={{marginTop: 20}}>
                     <Image
-                        source={{ uri: 'https://timedotcom.files.wordpress.com/2017/05/star-wars_1024.jpg' }}
+                        source={ this.state.imageSource }
                         style={{flex: 1, height: 150}}
                     />
                     <TouchableOpacity onPress={this.selectImage}>
@@ -125,21 +132,6 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#f1f1f2',
     },
-    row: {
-        flexDirection: 'row',
-        marginHorizontal: 10,
-    },
-    cell: {
-        borderWidth: 3,
-        borderColor: '#414677',
-        flex: 1,
-        height: 100,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    cellText: {
-        fontSize: 80,
-    },
 
     text: {
         ...text,
@@ -166,5 +158,8 @@ const styles = StyleSheet.create({
         borderBottomColor: '#bdc6cf',
         borderBottomWidth: 1,
         color: '#000'
-    }
+    },
+    spinnerTextStyle: {
+        color: '#FFF'
+    },
 });

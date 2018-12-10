@@ -9,7 +9,7 @@ export default createStackNavigator(
         MovieCreation: MovieCreationPage,
     },
     {
-        initialRouteName: 'MovieCreation',
+        initialRouteName: 'Main',
         navigationOptions: {
             headerStyle: {
                 backgroundColor: '#eaf1fb',

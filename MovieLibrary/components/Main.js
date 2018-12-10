@@ -9,6 +9,7 @@ import {Button, Card, Tile} from 'react-native-elements';
 
 
 import {moviesService} from '../services/movies.service'
+import Spinner from "react-native-loading-spinner-overlay";
 
 export default class MainPage extends Component {
     static navigationOptions = ({ navigation }) => ({
@@ -26,14 +27,15 @@ export default class MainPage extends Component {
     });
 
     state = {
-        movies: []
+        movies: [],
+        spinner: true
     };
 
     async componentDidMount() {
         this.props.navigation.setParams({ onPressNewMovie: this.onPressNewMovie });
 
         const movies = await moviesService.getAllMovies();
-        this.setState({ movies });
+        this.setState({ movies, spinner: false });
     }
 
 
@@ -53,49 +55,24 @@ export default class MainPage extends Component {
                 style={ styles.container }
                 source={require('../assets/img/background.png')}
             >
+                <Spinner
+                    visible={this.state.spinner}
+                    textContent={'Loading...'}
+                    textStyle={styles.spinnerTextStyle}
+                />
                 <ScrollView>
                     {
                         this.state.movies.map((movie) => (
-                            <Card key={movie.id} image={{uri: movie.imageUrl || defaultImageUrl}}>
-                                <Text style={{marginBottom: 10}}>
-                                    {movie.name}
-                                </Text>
-                                <Text style={{marginBottom: 10}}>
-                                    {movie.description}
-                                </Text>
-                                <Button
-                                    icon={{name: 'code'}}
-                                    backgroundColor='#546785'
-                                    buttonStyle={{borderRadius: 0, marginLeft: 0, marginRight: 0, marginBottom: 0}}
-                                    title='VIEW NOW'
-                                    onPress={this.onPressViewMovie}
-                                />
-                            </Card>
+                            <Tile
+                                key={movie.id}
+                                imageSrc={{uri: movie.imageurl}}
+                                title={movie.name}
+                                featured
+                                caption={movie.description}
+                                containerStyle={{marginVertical: 5}}
+                            />
                         ))
                     }
-
-
-                    <Tile
-                        imageSrc={{uri: defaultImageUrl}}
-                        title="Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolores dolore exercitationem"
-                        featured
-                        caption="Some Caption Text"
-                        containerStyle={{marginVertical: 5}}
-                    />
-                    <Tile
-                        imageSrc={{uri: defaultImageUrl}}
-                        title="Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolores dolore exercitationem"
-                        featured
-                        caption="Some Caption Text"
-                        containerStyle={{marginVertical: 5}}
-                    />
-                    <Tile
-                        imageSrc={{uri: defaultImageUrl}}
-                        title="Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolores dolore exercitationem"
-                        featured
-                        caption="Some Caption Text"
-                        containerStyle={{marginVertical: 5}}
-                    />
                 </ScrollView>
             </ImageBackground>
         );
@@ -127,5 +104,8 @@ const styles = StyleSheet.create({
     },
     logInButtonText: {
         color: '#fff',
+    },
+    spinnerTextStyle: {
+        color: '#FFF'
     },
 });

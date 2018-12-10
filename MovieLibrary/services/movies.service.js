@@ -5,8 +5,18 @@ class Http {
         return res;
     }
 
-    static handleError(err) {
-        alert(err.message);
+    static async handleError(err) {
+        console.log('Error: ', err);
+
+        let resultError;
+        try {
+            let errorBody = await err.json();
+            resultError = errorBody.message;
+        } catch (_err) {
+            resultError = 'Internal Server Error';
+        }
+
+        throw resultError;
     }
 
     static get(url) {
@@ -14,22 +24,21 @@ class Http {
             method: 'GET',
             headers: new Headers({ Accept: 'application/json' }),
         })
-            .then(res => res.json())
             .then(Http.checkError)
-            .catch(Http.handleError)
+            .then(res => res.json())
+            .catch(Http.handleError);
     }
 
-    static post(url, body, contentType = 'application/json') {
-        return fetch(url, {
+    static async post(url, body, contentType = 'application/json') {
+        return await fetch(url, {
             method: 'POST',
             body,
-            headers: new Headers({
-                Accept: 'application/json',
+            headers: {
                 'Content-Type': contentType
-            }),
+            }
         })
-            .then(res => res.json())
             .then(Http.checkError)
+            .then(res => res.json())
             .catch(Http.handleError)
     }
 }
@@ -38,7 +47,8 @@ class MoviesService {
     baseUrl;
 
     constructor() {
-        this.baseUrl = 'https://movielibraryapi-bstu-mt.herokuapp.com';
+        // this.baseUrl = 'https://movielibraryapi-bstu-mt.herokuapp.com';
+        this.baseUrl = 'https://08c78c95.ngrok.io';
     }
 
     async getAllMovies() {
@@ -54,17 +64,9 @@ class MoviesService {
         data.append('name', name);
         data.append('director', director);
         data.append('description', description);
-        if (image) {
-            data.append('photo', {
-                uri: image.uri,
-                type: image.type,
-                name: image.fileName,
-                data: image.data
-            });
-        }
+        data.append('imageurl', image);
 
-
-        return Http.post(`${this.baseUrl}/library`, data, 'multipart/form-data')
+        await Http.post(`${this.baseUrl}/library`, data, 'multipart/form-data')
     }
 }
 
