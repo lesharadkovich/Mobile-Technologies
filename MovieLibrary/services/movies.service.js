@@ -48,7 +48,7 @@ class MoviesService {
 
     constructor() {
         // this.baseUrl = 'https://movielibraryapi-bstu-mt.herokuapp.com';
-        this.baseUrl = 'https://08c78c95.ngrok.io';
+        this.baseUrl = 'https://6e41d2a9.ngrok.io';
     }
 
     async getAllMovies() {
@@ -64,9 +64,25 @@ class MoviesService {
         data.append('name', name);
         data.append('director', director);
         data.append('description', description);
-        data.append('imageurl', image);
+        data.append('imageurl', {
+            uri: image.uri,
+            type: image.type, // or photo.type
+            name: image.fileName
+        });
 
         await Http.post(`${this.baseUrl}/library`, data, 'multipart/form-data')
+    }
+
+    fetchImage(imageUrl) {
+        if (!imageUrl) {
+            return '';
+        }
+
+        if (imageUrl.startsWith('http')) {
+            return imageUrl;
+        }
+
+        return `${this.baseUrl}/${imageUrl}`;
     }
 }
 

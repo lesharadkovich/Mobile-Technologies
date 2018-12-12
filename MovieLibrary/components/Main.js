@@ -3,7 +3,7 @@ import {
     StyleSheet,
     Text,
     ScrollView,
-    View, ImageBackground,
+    RefreshControl, ImageBackground,
 } from 'react-native';
 import {Button, Card, Tile} from 'react-native-elements';
 
@@ -28,7 +28,8 @@ export default class MainPage extends Component {
 
     state = {
         movies: [],
-        spinner: true
+        spinner: true,
+        refreshing: false,
     };
 
     async componentDidMount() {
@@ -37,6 +38,12 @@ export default class MainPage extends Component {
         const movies = await moviesService.getAllMovies();
         this.setState({ movies, spinner: false });
     }
+
+    onRefresh = async () => {
+        this.setState({ refreshing: true });
+        const movies = await moviesService.getAllMovies();
+        this.setState({ movies, refreshing: false });
+    };
 
 
     onPressNewMovie = () => {
@@ -60,12 +67,17 @@ export default class MainPage extends Component {
                     textContent={'Loading...'}
                     textStyle={styles.spinnerTextStyle}
                 />
-                <ScrollView>
+                <ScrollView refreshControl={
+                    <RefreshControl
+                        refreshing={this.state.refreshing}
+                        onRefresh={this.onRefresh}
+                    />}
+                >
                     {
                         this.state.movies.map((movie) => (
                             <Tile
                                 key={movie.id}
-                                imageSrc={{uri: movie.imageurl}}
+                                imageSrc={{uri: moviesService.fetchImage(movie.imageurl)}}
                                 title={movie.name}
                                 featured
                                 caption={movie.description}
