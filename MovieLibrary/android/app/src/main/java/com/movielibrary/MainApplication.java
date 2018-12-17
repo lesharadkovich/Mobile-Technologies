@@ -1,4 +1,4 @@
-package com.tictactoe;
+package com.movielibrary;
 
 import android.app.Application;
 

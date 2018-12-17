@@ -82,7 +82,27 @@ class MoviesService {
             data.append('imageurl', 'https://timedotcom.files.wordpress.com/2017/05/star-wars_1024.jpg');
         }
 
-        await Http.post(`${this.baseUrl}/library`, data, 'multipart/form-data')
+        await Http.post(`${this.baseUrl}/library`, data, 'multipart/form-data');
+        // const body = {
+        //     name,
+        //     director,
+        //     description,
+        //     imageurl: image.data
+        // };
+        //
+        // const url = `${this.baseUrl}/library`;
+        // const fetchOptions = {
+        //     method: 'POST',
+        //     headers: {}
+        // };
+        //
+        // fetchOptions.headers['Content-Type'] = 'application/json';
+        //
+        // if (body && Object.keys(body).length) {
+        //     fetchOptions.body = JSON.stringify(body);
+        // }
+        //
+        // return await fetch(url, fetchOptions)
     }
 
     async deleteMovie(id) {
