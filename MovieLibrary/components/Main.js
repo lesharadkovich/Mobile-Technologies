@@ -32,17 +32,24 @@ export default class MainPage extends Component {
         refreshing: false,
     };
 
-    async componentDidMount() {
+    componentDidMount() {
         this.props.navigation.setParams({ onPressNewMovie: this.onPressNewMovie });
 
-        const movies = await moviesService.getAllMovies();
-        this.setState({ movies, spinner: false });
+        this.fetchAllMovies();
     }
 
-    onRefresh = async () => {
-        this.setState({ refreshing: true });
-        const movies = await moviesService.getAllMovies();
-        this.setState({ movies, refreshing: false });
+    fetchAllMovies = async () => {
+        try {
+            const movies = await moviesService.getAllMovies();
+            this.setState({ movies, spinner: false });
+        } catch (err) {
+            this.setState({ spinner: false });
+            alert(err);
+        }
+    };
+
+    onRefresh = () => {
+        this.fetchAllMovies();
     };
 
 
@@ -50,8 +57,8 @@ export default class MainPage extends Component {
         this.props.navigation.push('MovieCreation');
     };
 
-    onPressViewMovie = () => {
-        this.props.navigation.push('Game');
+    onPressViewMovie = (movie) => {
+        this.props.navigation.push('Movie', { movie });
     };
 
     render() {
@@ -82,6 +89,7 @@ export default class MainPage extends Component {
                                 featured
                                 caption={movie.description}
                                 containerStyle={{marginVertical: 5}}
+                                onPress={this.onPressViewMovie.bind(this, movie)}
                             />
                         ))
                     }

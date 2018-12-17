@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
+import {StyleSheet, View, Text, TouchableOpacity, Image, ScrollView, Alert} from 'react-native';
 import ImagePicker from 'react-native-image-picker';
 import Spinner from 'react-native-loading-spinner-overlay';
 
@@ -48,17 +48,24 @@ export default class MovieCreationPage extends Component {
         });
     };
 
-    save = async () => {
-        this.setState({ spinner: true });
+    back = () => {
+        this.props.navigation.goBack();
+    };
 
+    save = async () => {
         const name = this.inputRefs.name.value;
         const director = this.inputRefs.director.value;
         const description = this.inputRefs.description.value;
         const imageurl = this.imagePickerLastResponse;
 
         if (!name || !director || !description) {
+            this.inputRefs.name.setError();
+            this.inputRefs.director.setError();
+            this.inputRefs.description.setError();
             return;
         }
+
+        this.setState({ spinner: true });
 
         let result = '';
         try {
@@ -68,7 +75,12 @@ export default class MovieCreationPage extends Component {
             result = err;
         } finally {
             this.setState({ spinner: false });
-            alert(result);
+            Alert.alert(
+                '',
+                result,
+                [ {text: 'OK', onPress: () => this.back()} ],
+                { cancelable: false }
+            )
         }
     };
 

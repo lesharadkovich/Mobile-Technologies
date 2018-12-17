@@ -1,22 +1,11 @@
 class Http {
     static checkError(res) {
-        if (!res.ok)  throw res;
-
-        return res;
-    }
-
-    static async handleError(err) {
-        console.log('Error: ', err);
-
-        let resultError;
-        try {
-            let errorBody = await err.json();
-            resultError = errorBody.message;
-        } catch (_err) {
-            resultError = 'Internal Server Error';
+        if (!res.ok)  {
+            console.log('Error on server: ', res);
+            throw res.statusText || 'Internal Server Error';
         }
 
-        throw resultError;
+        return res;
     }
 
     static get(url) {
@@ -26,7 +15,6 @@ class Http {
         })
             .then(Http.checkError)
             .then(res => res.json())
-            .catch(Http.handleError);
     }
 
     static async post(url, body, contentType = 'application/json') {
@@ -39,7 +27,27 @@ class Http {
         })
             .then(Http.checkError)
             .then(res => res.json())
-            .catch(Http.handleError)
+    }
+
+    static async post(url, body, contentType = 'application/json') {
+        return await fetch(url, {
+            method: 'POST',
+            body,
+            headers: {
+                'Content-Type': contentType
+            }
+        })
+            .then(Http.checkError)
+    }
+
+    static async delete(url, contentType = 'application/json') {
+        return await fetch(url, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': contentType
+            }
+        })
+            .then(Http.checkError)
     }
 }
 
@@ -48,7 +56,7 @@ class MoviesService {
 
     constructor() {
         // this.baseUrl = 'https://movielibraryapi-bstu-mt.herokuapp.com';
-        this.baseUrl = 'https://6e41d2a9.ngrok.io';
+        this.baseUrl = 'https://fe42eebb.ngrok.io';
     }
 
     async getAllMovies() {
@@ -64,13 +72,21 @@ class MoviesService {
         data.append('name', name);
         data.append('director', director);
         data.append('description', description);
-        data.append('imageurl', {
-            uri: image.uri,
-            type: image.type, // or photo.type
-            name: image.fileName
-        });
+        if (image) {
+            data.append('imageurl', {
+                uri: image.uri,
+                type: image.type, // or photo.type
+                name: image.fileName
+            });
+        } else {
+            data.append('imageurl', 'https://timedotcom.files.wordpress.com/2017/05/star-wars_1024.jpg');
+        }
 
         await Http.post(`${this.baseUrl}/library`, data, 'multipart/form-data')
+    }
+
+    async deleteMovie(id) {
+        await Http.delete(`${this.baseUrl}/movie/${id}`);
     }
 
     fetchImage(imageUrl) {

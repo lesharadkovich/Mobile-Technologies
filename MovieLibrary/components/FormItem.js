@@ -17,6 +17,12 @@ export default class FormItemPage extends Component {
         return this.name;
     }
 
+    setError = () => {
+        if (!this.name) {
+            this.setState({ error: true });
+        }
+    };
+
     onInputChange = (event) => {
         if (!event) {
             this.setState({ error: true });
@@ -26,7 +32,7 @@ export default class FormItemPage extends Component {
     }
 
     render() {
-        const {label, placeholder} = this.props;
+        const {label, placeholder, editable, value} = this.props;
 
         return (
             <View>
@@ -35,6 +41,8 @@ export default class FormItemPage extends Component {
                     onChangeText={this.onInputChange}
                     placeholder={placeholder}
                     inputStyle={styles.input}
+                    editable={editable}
+                    value={value}
                 />
                 {
                     this.state.error && <FormValidationMessage>This field is required</FormValidationMessage>
